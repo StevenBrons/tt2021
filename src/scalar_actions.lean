@@ -1,9 +1,6 @@
 import algebra
 import algebra.algebra.basic
-
 #print has_scalar
-
-
 
 instance int.has_scalar : has_scalar ℕ ℕ := {
   smul := λ n m, n * m,
@@ -16,6 +13,7 @@ class sj_has_mul (G : Type*) :=
 (sj_mul : G → G → G)
 
 infix * := sj_has_mul.sj_mul
+
 
 class sj_semigroup (G : Type*) extends sj_has_mul G :=
 (sj_mul_assoc : ∀ a b c : G, a * b * c = a * (b * c))
@@ -34,16 +32,32 @@ instance (T : Type*) [sj_semigroup T] : sj_semigroup (sj_opposite T) :=
 
 -- 1.2 the has_scalar typeclass
 class sj_has_scalar (M : Type*) (α : Type*) := (sj_smul : M → α → α)
+
 infixr ` • `:73 := sj_has_scalar.sj_smul
+
 class sj_mul_action (M : Type*) (α : Type*) [monoid M] extends sj_has_scalar M α :=
 (sj_one_smul : ∀ a : α, (1 : M) • a = a)
 (sj_mul_smul : ∀ (x y : M) (a : α), (x * y) • a = x • y • a)
 
 -- 2.1 left multiplication
 
-instance sj_has_mul.to_has_scalar (α : Type*) [sj_has_mul α] : sj_has_scalar α α := { sj_smul := (*) }
+instance sj_has_mul.to_has_scalar (α : Type*) [sj_has_mul α] : sj_has_scalar α α := { 
+  sj_smul := λ (a: α) (b: α), a * b 
+}
 
 -- 2.2 
+meta def apply_n (α : Type*) [add_comm_monoid α] : ℕ -> (α -> α) -> α -> α := λ n: ℕ, λ f: α -> α, λ x: α, match n with
+  | 0 := 0
+  | 1 := f x
+  | k + 1 := f ((apply_n k f) x)
+end
+
+instance sj_repeated_add.to_has_scalar (α : Type*) [add_comm_monoid α] [module ℤ α] : sj_has_scalar ℕ α := {
+  sj_smul := λ (n: ℕ) (x: α), match n with
+    | 0 := 0
+    | k + 1 := (apply_n α k add) x
+  end
+}
 
 -- 3
 
@@ -85,7 +99,11 @@ instance addmap.distrib_mul_action [monoid R] [add_monoid M] [add_comm_monoid N]
   mul_smul := λ r s f, by simp [mul_smul],
   smul_add := λ r f g, add_monoid_hom.ext (λ x, by simp [smul_add]),
   smul_zero := λ r,add_monoid_hom.ext (λ x, by simp [smul_zero]),
-}
+Instance (group_theory.group_action.pi)
+1 instance pi.has_scalar (...) [Πi, has_scalar M (f i)]
+2 : has_scalar M (Πi : I, f i) := { smul := λr v, (λi, r • v i) }
+Steven Bronsveld, Jelmer Firet Decemb er 19, 2021 Scalar Actions 5 / 6
+
 
 section linmap_has_scalar
 
